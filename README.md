@@ -43,6 +43,8 @@ The deploy form has zero fields — the template wires everything. These are the
 | `MODEL` | `jev-local` | `jev-local` = local JevOS sidecar ($0, no key); `jev` = hosted TypeSafe API (needs `TYPESAFE_AI_API_KEY`); `mock` = coin-flip decisions for testing |
 | `JEV_BASE_URL` | auto-wired to the jevos sidecar over the private network | Where the trader finds the model; the template sets this via `${{jevos.RAILWAY_PRIVATE_DOMAIN}}` |
 | `JEV_MODEL_ID` | `jev-latest` | Model ID sent with each decision request |
+| `TYPESAFE_AI_API_KEY` | _(unset)_ | Only for `MODEL=jev` (hosted TypeSafe API) |
+| `JEV_API_KEY` | _(unset)_ | Only if your JevOS sidecar requires auth |
 
 **Trading knobs:**
 
@@ -62,6 +64,15 @@ The deploy form has zero fields — the template wires everything. These are the
 | `RPC_URL` / `READ_RPC_URL` | `https://rpc.monad.xyz` | Monad endpoints for transactions and book reads |
 | `WS_URL` | _(unset)_ | Optional websocket feed; block polling always runs as backstop |
 | `MARKET` | Kuru MON-USDC `0x065C…9C394` | The book it trades; don't change unless you're pointing at another Kuru market |
+
+**Margin & gas (usually leave alone):**
+
+| Variable | Default | What it does |
+|---|---|---|
+| `MARGIN_MON` / `MARGIN_USDC` | `600` / `20` | Target margin-account balances; the bot tops up at startup (live orders draw from margin, not the wallet) |
+| `MARGIN_ACCOUNT` | Kuru MON-USDC account `0x2A68…D8E90c5` | Must match `MARKET`; only change if `MARKET` changes |
+| `GAS_LIMIT` | _(unset = estimate once at startup)_ | Monad charges gas on the limit; hardcode to skip estimation |
+| `MAX_FEE_GWEI` / `PRIORITY_FEE_GWEI` | `400` / `2` | EIP-1559 caps (Monad hardcodes priority fee at 2) |
 
 **Going live:** add `PRIVATE_KEY` and set `DRY_RUN=false` in Variables — never in a template form. The bot funds its Kuru margin account at startup and places fire-and-forget post-only limit orders. Start small.
 

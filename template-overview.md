@@ -33,8 +33,8 @@ Hosted decision APIs charge per token and add network latency to a 300 ms block 
 Zero form fields on deploy — the template wires the model URL itself. After deploy, these are the knobs in the trader service's **Variables** panel (all optional):
 
 - **Model:** `MODEL` (`jev-local` default = free local JevOS sidecar; `jev` = hosted TypeSafe API via `TYPESAFE_AI_API_KEY`; `mock` = random decisions). `JEV_BASE_URL` is auto-wired to the sidecar over the private network.
-- **Trading:** `DRY_RUN` (`true` = paper trading; set `false` + `PRIVATE_KEY` for live orders), `TRADE_SIZE_MON` (200), `MAX_POSITION_MON` (1000), `QUOTE_INSIDE_TICKS` (1), `HORIZON_BLOCKS` (100), `BANKROLL_USD` (100, for P&L %).
-- **Chain:** `RPC_URL` / `READ_RPC_URL` (default `https://rpc.monad.xyz`), optional `WS_URL`, `MARKET` (Kuru MON-USDC).
+- **Trading:** `DRY_RUN` (`true` = paper trading; set `false` + `PRIVATE_KEY` for live orders), `TRADE_SIZE_MON` (200), `MAX_POSITION_MON` (1000), `QUOTE_INSIDE_TICKS` (1), `HORIZON_BLOCKS` (100), `BANKROLL_USD` (100, for P&L %), `MARGIN_MON`/`MARGIN_USDC` (600/20), `GAS_LIMIT`, `MAX_FEE_GWEI`/`PRIORITY_FEE_GWEI` (400/2).
+- **Chain:** `RPC_URL` / `READ_RPC_URL` (default `https://rpc.monad.xyz`), optional `WS_URL`, `MARKET` + `MARGIN_ACCOUNT` (Kuru MON-USDC; change together or not at all).
 
 To go live, add `PRIVATE_KEY` with `DRY_RUN=false` — in Variables, never in a template form.
 
