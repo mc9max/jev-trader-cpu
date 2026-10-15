@@ -17,7 +17,9 @@ The trader discovers the model at `http://${{jevos.RAILWAY_PRIVATE_DOMAIN}}:${{j
 
 ## Why Deploy
 
-Hosted decision APIs charge per token and add network latency to a 300 ms block budget. Jev Trader CPU keeps the whole loop on your own hardware: the JevOS sidecar answers in tens of milliseconds on shared CPU, the book read is a single `eth_call`, and the decision never leaves your Railway private network. You get the real upstream market-making strategy — post-only quotes one tick inside the touch, position caps, adverse-selection-aware quoting — with a $0/month inference bill and nothing to sign up for.
+Hosted decision APIs charge per token and add network latency to a 300 ms block budget. Jev Trader CPU keeps the whole loop on your own hardware: the book read is a single `eth_call`, and the decision never leaves your Railway private network. You get the real upstream market-making strategy — post-only quotes one tick inside the touch, position caps, adverse-selection-aware quoting — with a $0/month inference bill and nothing to sign up for.
+
+**Latency note (measured 2026-10-15):** on Railway's shared Hobby CPU the local JevOS model answers in ~0.5–1.9 s, not inside the ~300 ms block window — roughly 1 block in 4 gets a fresh decision and the rest safely hold (the dashboard shows `late` holds and per-decision latency honestly). The dry-run loop still paper-trades correctly: every decision posts a real sim quote and fills trigger on real taker prints.
 
 ## Common Use Cases
 
