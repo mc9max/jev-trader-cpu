@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <!-- base -->
+  <rect width="256" height="256" rx="48" fill="url(#g)"/>
+  <!-- candlesticks: local AI deciding buy/sell on the book -->
+  <rect x="52"  y="120" width="26" height="66" rx="6" fill="#ffffff" fill-opacity="0.92"/>
+  <rect x="62"  y="96"  width="6"  height="114" fill="#ffffff" fill-opacity="0.92"/>
+  <rect x="96"  y="150" width="26" height="52" rx="6" fill="#ffffff" fill-opacity="0.72"/>
+  <rect x="106" y="128" width="6"  height="96" fill="#ffffff" fill-opacity="0.72"/>
+  <rect x="140" y="88"  width="26" height="58" rx="6" fill="#ffffff"/>
+  <rect x="150" y="64"  width="6"  height="106" fill="#ffffff"/>
+  <!-- decision arrow: buy -->
+  <path d="M196 190 l0 -52 m0 0 l-18 18 m18 -18 l18 18" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

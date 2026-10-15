@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Trader CPU — live</title>
+<style>
+  :root { --bg:#0b0e14; --card:#131826; --line:#232c44; --txt:#e6ebf5; --dim:#8b95b0;
+          --buy:#22c55e; --sell:#ef4444; --hold:#f59e0b; --acc:#60a5fa; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { padding:18px 22px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  header h1 { font-size:18px; margin:0 8px 0 0; }
+  .badge { font-size:12px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); color:var(--dim); }
+  .badge.dry { color:#fbbf24; border-color:#7c5a10; }
+  .badge.live { color:var(--sell); border-color:#7c1d1d; }
+  .badge.model { color:var(--acc); border-color:#1e3a8a; }
+  #conn { margin-left:auto; font-size:12px; color:var(--dim); display:flex; align-items:center; gap:6px; }
+  #dot { width:9px; height:9px; border-radius:50%; background:var(--hold); }
+  #dot.on { background:var(--buy); }
+  main { padding:18px 22px; max-width:1200px; margin:0 auto; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .card .k { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin-bottom:4px; }
+  .card .v { font-size:20px; font-weight:650; font-variant-numeric:tabular-nums; }
+  .card .s { font-size:12px; color:var(--dim); }
+  .decision { display:flex; align-items:center; gap:14px; }
+  .action { font-size:26px; font-weight:800; padding:6px 18px; border-radius:10px; }
+  .action.buy { background:rgba(34,197,94,.14); color:var(--buy); }
+  .action.sell { background:rgba(239,68,68,.14); color:var(--sell); }
+  .action.hold { background:rgba(245,158,11,.14); color:var(--hold); }
+  .bars { flex:1; min-width:200px; }
+  .bar-row { display:flex; align-items:center; gap:8px; font-size:12px; margin:4px 0; }
+  .bar-row .lbl { width:34px; color:var(--dim); }
+  .bar { flex:1; height:8px; background:#0b0e14; border-radius:4px; overflow:hidden; }
+  .bar i { display:block; height:100%; }
+  .bar.buy i { background:var(--buy); } .bar.sell i { background:var(--sell); }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+  .b { color:var(--buy); font-weight:700; } .s2 { color:var(--sell); font-weight:700; } .h { color:var(--hold); font-weight:700; }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; }
+  footer { padding:14px 22px; color:var(--dim); font-size:12px; border-top:1px solid var(--line); }
+  a { color:var(--acc); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Jev Trader CPU</h1>
+  <span class="badge model" id="b-model">model: …</span>
+  <span class="badge dry" id="b-mode">…</span>
+  <span class="badge mono" id="b-wallet" title="wallet">…</span>
+  <span id="conn"><span id="dot"></span><span id="conn-t">connecting…</span></span>
+</header>
+<main>
+  <div class="card" style="margin-bottom:14px">
+    <div class="k">Latest decision</div>
+    <div class="decision">
+      <div class="action hold" id="d-action">—</div>
+      <div class="bars">
+        <div class="bar-row"><span class="lbl">buy</span><div class="bar buy"><i id="d-buy" style="width:0%"></i></div><span id="d-buyv" class="mono">—</span></div>
+        <div class="bar-row"><span class="lbl">sell</span><div class="bar sell"><i id="d-sell" style="width:0%"></i></div><span id="d-sellv" class="mono">—</span></div>
+      </div>
+      <div class="s mono" id="d-meta">waiting for first block…</div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="k">Block</div><div class="v mono" id="s-block">—</div><div class="s" id="s-uptime"></div></div>
+    <div class="card"><div class="k">MON mid</div><div class="v mono" id="s-mid">—</div><div class="s" id="s-spread"></div></div>
+    <div class="card"><div class="k">Quote</div><div class="v mono" id="s-quote" style="font-size:16px">—</div><div class="s" id="s-resting"></div></div>
+    <div class="card"><div class="k">Position</div><div class="v mono" id="s-pos" style="font-size:16px">—</div><div class="s" id="s-unreal"></div></div>
+    <div class="card"><div class="k">P&amp;L (paper)</div><div class="v mono" id="s-pnl">—</div><div class="s" id="s-fills"></div></div>
+    <div class="card"><div class="k">Blocks</div><div class="v mono" id="s-blocks">—</div><div class="s" id="s-late"></div></div>
+  </div>
+  <div class="card">
+    <div class="k" style="margin-bottom:8px">Live block feed</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Block</th><th>Mid</th><th>Spread</th><th>Decision</th><th>P(buy)</th><th>Latency</th><th>Quote</th><th>Fill</th></tr></thead>
+      <tbody id="feed"></tbody>
+    </table>
+    </div>
+  </div>
+</main>
+<footer>
+  Jev Trader CPU — a <a href="https://github.com/jarrodwatts/jev-trader">jev-trader</a> fork whose decisions come from a
+  local <a href="https://github.com/feder-cr/jev">JevOS</a> CPU model ($0 inference, no API key), trading paper orders on the
+  live Kuru MON-USDC book. Dry-run: orders are simulated, fills trigger on real taker prints.
+</footer>
+<script>
+const $ = id => document.getElementById(id);
+const feed = $("feed");
+let startedAt = 0, meta = null, rows = 0;
+const MAX_ROWS = 60;
+
+function fmtUsd(x){ return (x<0?"−$":"$") + Math.abs(x).toFixed(4); }
+function setConn(on, t){ $("dot").className = on ? "on" : ""; $("dot").id="dot"; if(on) $("dot").classList.add("on"); $("conn-t").textContent = t; }
+function tick(){ if(startedAt){ const s=Math.floor((Date.now()-startedAt)/1000); const h=String(Math.floor(s/3600)).padStart(2,"0"),m=String(Math.floor(s%3600/60)).padStart(2,"0"),ss=String(s%60).padStart(2,"0"); $("s-uptime").textContent = "uptime "+h+":"+m+":"+ss; } }
+setInterval(tick, 1000);
+
+function snapshot(s){
+  meta = s; startedAt = s.startedAt || Date.now();
+  $("b-model").textContent = "model: " + s.model;
+  const dry = s.dryRun;
+  $("b-mode").textContent = dry ? "DRY RUN (paper)" : "LIVE";
+  $("b-mode").className = "badge " + (dry ? "dry" : "live");
+  $("b-wallet").textContent = s.wallet ? s.wallet.slice(0,6)+"…"+s.wallet.slice(-4) : "no wallet";
+  (s.history||[]).slice(-MAX_ROWS).forEach(e => onBlock(e));
+  tick();
+}
+function onBlock(e){
+  if(!e || e.block == null) return;
+  const d = e.decision, q = e.quote, p = e.position, t = e.totals;
+  const cls = !d ? "h" : d.late ? "h" : d.action === "buy" ? "b" : d.action === "sell" ? "s2" : "h";
+  const act = !d ? "—" : d.late ? "HOLD (late)" : d.action.toUpperCase();
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    "<td class='mono'>"+e.block+"</td><td class='mono'>"+e.mid.toFixed(6)+"</td><td class='mono'>"+e.spreadBps.toFixed(1)+"bp</td>"+
+    "<td class='"+cls+"'>"+act+"</td><td class='mono'>"+(d? (d.probabilities.buy*100).toFixed(0)+"%":"—")+"</td>"+
+    "<td class='mono'>"+(d? d.latencyMs+"ms":"—")+"</td>"+
+    "<td class='mono'>"+(q? q.side.toUpperCase()+" "+q.size+" @ "+q.price.toFixed(6):"—")+"</td>"+
+    "<td class='mono'>"+(e.fill? e.fill.side+" "+e.fill.size+" @ "+e.fill.price.toFixed(6):"—")+"</td>";
+  feed.prepend(tr);
+  if(++rows > MAX_ROWS) feed.lastChild.remove();
+  // latest decision panel
+  if(d){
+    const a = $("d-action"); a.textContent = d.late ? "HOLD" : d.action.toUpperCase();
+    a.className = "action " + (d.late ? "hold" : d.action);
+    $("d-buy").style.width = (d.probabilities.buy*100)+"%";
+    $("d-sell").style.width = (d.probabilities.sell*100)+"%";
+    $("d-buyv").textContent = (d.probabilities.buy*100).toFixed(1)+"%";
+    $("d-sellv").textContent = (d.probabilities.sell*100).toFixed(1)+"%";
+    $("d-meta").textContent = "block "+e.block+" · "+d.latencyMs+"ms inference"+(d.late?" · late":"");
+  }
+  $("s-block").textContent = e.block;
+  $("s-mid").textContent = e.mid.toFixed(6);
+  $("s-spread").textContent = "spread "+e.spreadBps.toFixed(2)+" bps · bid "+e.bestBid.toFixed(6)+" / ask "+e.bestAsk.toFixed(6);
+  $("s-quote").textContent = q ? q.side.toUpperCase()+" "+q.size+" @ "+q.price.toFixed(6) : "—";
+  $("s-quote").style.color = q ? (q.side==="buy"?"var(--buy)":"var(--sell)") : "";
+  $("s-resting").textContent = "resting bid "+e.resting.bidMon+" / ask "+e.resting.askMon+" MON";
+  $("s-pos").textContent = p.side.toUpperCase()+" "+Math.abs(p.size)+" MON";
+  $("s-unreal").textContent = "unrealized "+fmtUsd(p.unrealizedUsd);
+  $("s-pnl").textContent = fmtUsd(t.pnlUsd);
+  $("s-pnl").style.color = t.pnlUsd>=0?"var(--buy)":"var(--sell)";
+  $("s-fills").textContent = t.fills+" fills · "+t.quotes+" quotes · "+fmtUsd(t.realizedUsd)+" realized";
+  $("s-blocks").textContent = t.blocks;
+  $("s-late").textContent = t.decisions+" decisions · "+t.lateBlocks+" late";
+}
+function connect(){
+  setConn(false, "connecting…");
+  const es = new EventSource("events");
+  es.addEventListener("snapshot", ev => { try{ setConn(true,"live"); snapshot(JSON.parse(ev.data)); }catch(e){} });
+  es.addEventListener("block", ev => { try{ onBlock(JSON.parse(ev.data)); }catch(e){} });
+  es.onerror = () => { setConn(false, "reconnecting…"); es.close(); setTimeout(connect, 3000); };
+}
+connect();
+</script>
+</body>
+</html>
