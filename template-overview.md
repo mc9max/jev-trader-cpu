@@ -28,6 +28,16 @@ Hosted decision APIs charge per token and add network latency to a 300 ms block 
 - Fork it into your own JevOS-powered trading logic — `src/model.ts` (`LocalJevModel`) is the seam
 - Demo CPU-only AI decisions: the whole "brain" is a 630 MB INT8 model running on shared vCPU
 
+## Configuration
+
+Zero form fields on deploy — the template wires the model URL itself. After deploy, these are the knobs in the trader service's **Variables** panel (all optional):
+
+- **Model:** `MODEL` (`jev-local` default = free local JevOS sidecar; `jev` = hosted TypeSafe API via `TYPESAFE_AI_API_KEY`; `mock` = random decisions). `JEV_BASE_URL` is auto-wired to the sidecar over the private network.
+- **Trading:** `DRY_RUN` (`true` = paper trading; set `false` + `PRIVATE_KEY` for live orders), `TRADE_SIZE_MON` (200), `MAX_POSITION_MON` (1000), `QUOTE_INSIDE_TICKS` (1), `HORIZON_BLOCKS` (100), `BANKROLL_USD` (100, for P&L %).
+- **Chain:** `RPC_URL` / `READ_RPC_URL` (default `https://rpc.monad.xyz`), optional `WS_URL`, `MARKET` (Kuru MON-USDC).
+
+To go live, add `PRIVATE_KEY` with `DRY_RUN=false` — in Variables, never in a template form.
+
 ## Dependencies for
 
 ### Deployment Dependencies

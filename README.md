@@ -32,6 +32,39 @@ Hosted decision APIs charge per token and add network latency to a 300 ms budget
 
 Upstream asks the hosted Jev a buy/sell *choice* question. JevOS (jevos-v3) answers yes/no (`noul`) questions, so this fork asks one boolean instead — *"Will MON be higher than the current mid after the horizon?"* — and treats P(yes) as the buy probability (`src/model.ts`). Same state, same market-making goal text, same 0.5 threshold. If a block's inference misses the window (or JevOS is unreachable) the bot safely holds that block instead of guessing.
 
+## Configuration
+
+The deploy form has zero fields — the template wires everything. These are the knobs, only if you want to tune. Set them in the trader service's **Variables** panel after deploy (all optional; defaults are baked into the image).
+
+**Model — leave alone unless you know why:**
+
+| Variable | Default | What it does |
+|---|---|---|
+| `MODEL` | `jev-local` | `jev-local` = local JevOS sidecar ($0, no key); `jev` = hosted TypeSafe API (needs `TYPESAFE_AI_API_KEY`); `mock` = coin-flip decisions for testing |
+| `JEV_BASE_URL` | auto-wired to the jevos sidecar over the private network | Where the trader finds the model; the template sets this via `${{jevos.RAILWAY_PRIVATE_DOMAIN}}` |
+| `JEV_MODEL_ID` | `jev-latest` | Model ID sent with each decision request |
+
+**Trading knobs:**
+
+| Variable | Default | What it does |
+|---|---|---|
+| `DRY_RUN` | `true` | Paper trading (simulated fills). Set `false` together with `PRIVATE_KEY` for live orders |
+| `TRADE_SIZE_MON` | `200` | Order size in MON (200 is the Kuru minimum) |
+| `MAX_POSITION_MON` | `1000` | Max net position; the bot stops quoting a side past this |
+| `QUOTE_INSIDE_TICKS` | `1` | Ticks inside the touch to post (`0` = join best bid/ask; never crosses) |
+| `HORIZON_BLOCKS` | `100` | How far ahead (~30 s) the model predicts the move |
+| `BANKROLL_USD` | `100` | Virtual bankroll the dashboard uses for P&L % |
+
+**Chain / RPC:**
+
+| Variable | Default | What it does |
+|---|---|---|
+| `RPC_URL` / `READ_RPC_URL` | `https://rpc.monad.xyz` | Monad endpoints for transactions and book reads |
+| `WS_URL` | _(unset)_ | Optional websocket feed; block polling always runs as backstop |
+| `MARKET` | Kuru MON-USDC `0x065C…9C394` | The book it trades; don't change unless you're pointing at another Kuru market |
+
+**Going live:** add `PRIVATE_KEY` and set `DRY_RUN=false` in Variables — never in a template form. The bot funds its Kuru margin account at startup and places fire-and-forget post-only limit orders. Start small.
+
 ## Going live (your key, your risk)
 
 The template ships keyless and dry-runs. To place real orders, add `PRIVATE_KEY` (and `DRY_RUN=false`) in the trader service's **Variables** panel — never in the template form. Live quotes are fire-and-forget post-only limit orders drawn from the Kuru margin account; the bot deposits margin at startup. Start small, watch the dashboard, and understand the upstream strategy before funding it.
